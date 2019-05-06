@@ -23,7 +23,7 @@ PotHD44780Controller >> bitOrArray: anArray [
 ]
 
 { #category : #commands }
-PotHD44780Controller >> clear [
+PotHD44780Controller >> clearDisplay [
 	self writeCommand: (instructionDic at: #LCD_CLEARDISPLAY).
 	(Delay forSeconds: 0.003) wait
 	"3 miliseconds waiting to clear the display"
@@ -48,11 +48,6 @@ PotHD44780Controller >> displayFunction: anArray [
 { #category : #initialization }
 PotHD44780Controller >> displayMode: anArray [
 	displayMode := self bitOrArray: anArray
-]
-
-{ #category : #initialization }
-PotHD44780Controller >> gpioConfiguration [
-	self subclassResponsibility 
 ]
 
 { #category : #commands }
@@ -114,7 +109,7 @@ PotHD44780Controller >> initializeRegisters [
 	self writeCommand: ((instructionDic at: #LCD_DISPLAYCONTROL) bitOr: displayControl).
 	self writeCommand: ((instructionDic at: #LCD_FUNCTIONSET) bitOr: displayFunction).
 	self writeCommand: ((instructionDic at: #LCD_ENTRYMODESET) bitOr: displayMode).
-	self clear
+	self clearDisplay
 ]
 
 { #category : #testing }
@@ -133,20 +128,14 @@ PotHD44780Controller >> setCursorAtRow: anInteger [
 PotHD44780Controller >> setCursorAtRow: anInteger col: anInteger2 [
 	self writeCommand:
 		((instructionDic at: #LCD_SETDDRAMADDR)
-			bitOr: anInteger2 + ((instructionDic at: #LCD_ROW_OFFSETS) at:anInteger))
-]
-
-{ #category : #initialization }
-PotHD44780Controller >> setPin: anObject at: aSymbol [
-	gpioDic ifNil: [gpioDic := Dictionary new].
-	gpioDic add: aSymbol -> anObject
+			bitOr: (anInteger2 -1) + ((instructionDic at: #LCD_ROW_OFFSETS) at:anInteger))
 ]
 
 { #category : #writing }
 PotHD44780Controller >> showMessage: aString [
 	| charHex |
 	1 to: aString size do: [ :i | 
-		charHex := (aString at: i) hex.
+		charHex := (aString at: i) asciiValue.
 		(aString at: i) = $\
 			ifTrue: [ self setCursorAtRow: 2 ]
 			ifFalse: [ self writeText: charHex ] ]

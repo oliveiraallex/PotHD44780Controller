@@ -12,11 +12,6 @@ PotLCDI2C >> connect [
 	i2cConnection := board connectToI2CDevice: 16r27 
 ]
 
-{ #category : #initialization }
-PotLCDI2C >> gpioConfiguration [
-	^ nil
-]
-
 { #category : #testing }
 PotLCDI2C >> isConnected [
 	^ i2cConnection notNil
