@@ -2,16 +2,30 @@ Class {
 	#name : #PotHD44780Controller,
 	#superclass : #PotDevice,
 	#instVars : [
-		'instructionSetDic',
-		'gpioDic'
+		'instructionDic',
+		'gpioDic',
+		'displayControl',
+		'displayFunction',
+		'displayMode'
 	],
 	#category : #'PharoThings-Devices-HD44780'
 }
 
+{ #category : #initialization }
+PotHD44780Controller >> bitOrArray: anArray [
+	
+	| hex hexOr |
+	1 to: anArray size do: [ :i |  
+		hex := (instructionDic at: (anArray at: i )) .
+		hexOr ifNil: [ hexOr := hex] ifNotNil: [ hexOr := hexOr bitOr: hex ].
+		 ].   
+	^hexOr. 
+]
+
 { #category : #commands }
-PotHD44780Controller >> clear [ 
-	self writeCommand: (instructionSetDic at: #LCD_CLEARDISPLAY).
-	(Delay forSeconds: 0.003) wait.
+PotHD44780Controller >> clear [
+	self writeCommand: (instructionDic at: #LCD_CLEARDISPLAY).
+	(Delay forSeconds: 0.003) wait
 	"3 miliseconds waiting to clear the display"
 ]
 
@@ -21,21 +35,38 @@ PotHD44780Controller >> connect [
 ]
 
 { #category : #initialization }
+PotHD44780Controller >> displayControl: anArray [
+	displayControl := self bitOrArray: anArray.
+	
+]
+
+{ #category : #initialization }
+PotHD44780Controller >> displayFunction: anArray [
+	displayFunction := self bitOrArray: anArray
+]
+
+{ #category : #initialization }
+PotHD44780Controller >> displayMode: anArray [
+	displayMode := self bitOrArray: anArray
+]
+
+{ #category : #initialization }
 PotHD44780Controller >> gpioConfiguration [
 	self subclassResponsibility 
 ]
 
 { #category : #commands }
 PotHD44780Controller >> home [ 
-	self writeCommand: (instructionSetDic at: #LCD_RETURNHOME).
+	self writeCommand: (instructionDic at: #LCD_RETURNHOME).
 	(Delay forSeconds: 0.003) wait.
 	"3 miliseconds waiting, this command takes a long time"
 ]
 
 { #category : #initialization }
 PotHD44780Controller >> initialize [
-	instructionSetDic := Dictionary new.
-	instructionSetDic 
+	
+	instructionDic := Dictionary new.
+	instructionDic 
 		"Commands"
 		add: (#LCD_CLEARDISPLAY -> 16r01);
 		add: (#LCD_RETURNHOME -> 16r02);
@@ -74,6 +105,18 @@ PotHD44780Controller >> initialize [
 	
 ]
 
+{ #category : #initialization }
+PotHD44780Controller >> initializeRegisters [
+	"Initialize the display"
+	self writeCommand: 16r33.
+	self writeCommand: 16r32.
+	"Write registers"
+	self writeCommand: ((instructionDic at: #LCD_DISPLAYCONTROL) bitOr: displayControl).
+	self writeCommand: ((instructionDic at: #LCD_FUNCTIONSET) bitOr: displayFunction).
+	self writeCommand: ((instructionDic at: #LCD_ENTRYMODESET) bitOr: displayMode).
+	self clear
+]
+
 { #category : #testing }
 PotHD44780Controller >> isConnected [
 	^self subclassResponsibility 
@@ -88,10 +131,9 @@ PotHD44780Controller >> setCursorAtRow: anInteger [
 
 { #category : #commands }
 PotHD44780Controller >> setCursorAtRow: anInteger col: anInteger2 [
-	self
-		writeCommand:
-			((instructionSetDic at: #LCD_SETDDRAMADDR)
-				bitOr: anInteger2 + ((instructionSetDic at: #LCD_ROW_OFFSETS) at:anInteger))
+	self writeCommand:
+		((instructionDic at: #LCD_SETDDRAMADDR)
+			bitOr: anInteger2 + ((instructionDic at: #LCD_ROW_OFFSETS) at:anInteger))
 ]
 
 { #category : #initialization }
