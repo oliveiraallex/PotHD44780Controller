@@ -3,7 +3,6 @@ Class {
 	#superclass : #PotDevice,
 	#instVars : [
 		'instructionDic',
-		'gpioDic',
 		'displayControl',
 		'displayFunction',
 		'displayMode'
@@ -50,13 +49,6 @@ PotHD44780Controller >> displayMode: anArray [
 	displayMode := self bitOrArray: anArray
 ]
 
-{ #category : #commands }
-PotHD44780Controller >> home [ 
-	self writeCommand: (instructionDic at: #LCD_RETURNHOME).
-	(Delay forSeconds: 0.003) wait.
-	"3 miliseconds waiting, this command takes a long time"
-]
-
 { #category : #initialization }
 PotHD44780Controller >> initialize [
 	
@@ -96,25 +88,32 @@ PotHD44780Controller >> initialize [
 		add: (#LCD_5x10DOTS -> 16r04);
 		add: (#LCD_5x8DOTS -> 16r00);
 		"Offset for up to 4 rows"
-		add: (#LCD_ROW_OFFSETS -> #(16r00 16r40 16r14 16r54)) .
-	
+		add: (#LCD_ROW_OFFSETS -> #(16r00 16r40 16r14 16r54));
+		add: (#LCD_BACKLIGHT -> 16r08);
+		add: (#LCD_NOBACKLIGHT -> 16r00);
+		"Enable bit"
+		add: (#LCD_ENABLEBIT -> 16r04);
+		"Read/Write bit"
+		add: (#LCD_READWRITEBIT -> 16r02);
+		"Register select bit"
+		add: (#LCD_REGISTERBIT -> 16r01)
 ]
 
 { #category : #initialization }
 PotHD44780Controller >> initializeRegisters [
-	"Initialize the display"
-	self writeCommand: 16r33.
-	self writeCommand: 16r32.
-	"Write registers"
-	self writeCommand: ((instructionDic at: #LCD_DISPLAYCONTROL) bitOr: displayControl).
-	self writeCommand: ((instructionDic at: #LCD_FUNCTIONSET) bitOr: displayFunction).
-	self writeCommand: ((instructionDic at: #LCD_ENTRYMODESET) bitOr: displayMode).
-	self clearDisplay
+	self subclassResponsibility 
 ]
 
 { #category : #testing }
 PotHD44780Controller >> isConnected [
 	^self subclassResponsibility 
+]
+
+{ #category : #commands }
+PotHD44780Controller >> returnHome [ 
+	self writeCommand: (instructionDic at: #LCD_RETURNHOME).
+	(Delay forSeconds: 0.003) wait.
+	"3 miliseconds waiting, this command takes a long time"
 ]
 
 { #category : #commands }
@@ -139,11 +138,6 @@ PotHD44780Controller >> showMessage: aString [
 		(aString at: i) = $\
 			ifTrue: [ self setCursorAtRow: 2 ]
 			ifFalse: [ self writeText: charHex ] ]
-]
-
-{ #category : #writing }
-PotHD44780Controller >> syncClock [
-	self subclassResponsibility 
 ]
 
 { #category : #writing }
