@@ -69,7 +69,7 @@ PotLCD >> syncClock [
 PotLCD >> write: anHex charMode: aBit [
 	| j |
 	j := 1.
-	(Delay forSeconds: 0.001) wait.
+	(Delay forSeconds: 0.0001) wait.
 	"1 miliseconds waiting to prevent write too quickly"
 	(gpioDic at: #modePin) value: aBit.
 	8 to: 1 by: -1 do: [ :i | 

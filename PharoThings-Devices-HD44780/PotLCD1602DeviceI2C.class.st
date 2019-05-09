@@ -4,7 +4,7 @@ Class {
 	#category : #'PharoThings-Devices-HD44780'
 }
 
-{ #category : #controlling }
+{ #category : #initialization }
 PotLCD1602DeviceI2C >> initialize [
 	super initialize.
 	self
