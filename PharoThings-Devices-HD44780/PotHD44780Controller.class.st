@@ -109,21 +109,6 @@ PotHD44780Controller >> isConnected [
 	^self subclassResponsibility 
 ]
 
-{ #category : #writing }
-PotHD44780Controller >> log: anHex [
-	| string |
-	string := (anHex codePoint printPaddedWith: $0 to: 8 base: 2)	asString.
-	Transcript show: string;	cr
-]
-
-{ #category : #writing }
-PotHD44780Controller >> log: anHex txt: aString eol: aBit [
-	| string |
-	string := (anHex codePoint printPaddedWith: $0 to: 8 base: 2)	asString.
-	aBit ifTrue: [ Transcript show: aString asString,': ' string;	cr ]
-		ifFalse: [ Transcript show: aString asString,': '  string ,' ' ]
-]
-
 { #category : #commands }
 PotHD44780Controller >> returnHome [ 
 	self writeCommand: (instructionDic at: #LCD_RETURNHOME).
